@@ -1,19 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
-const User = require('../Models/userModel');
+const Doctor = require('../Models/doctorModel');
 const asyncHandler = require('express-async-handler');
 const jwt = require('jsonwebtoken');
 const protect = require('../MiddeleWare/authMiddeleware');
 
 
-//Generate JWT Token
 const generateToken = (id) => {
     return jwt.sign({id}, process.env.JWT_SECRET, {expiresIn: '1d'})
 }
 
 //Login
-router.post('/login', asyncHandler( async (req,res) => {
+router.post('/doctorLogin', asyncHandler( async (req,res) => {
     const {email, password} = req.body;
 
     if( !email || !password){
@@ -39,8 +38,8 @@ router.post('/login', asyncHandler( async (req,res) => {
 })
 )
 
-//Register User
-router.post('/registerUser', asyncHandler( async (req,res) => {
+//Register Doctor
+router.post('/registerDoctor', asyncHandler( async (req,res) => {
     const {name, email, phoneno, password} = req.body;
 
     if(!name || !email || !phoneno || !password){
@@ -48,24 +47,24 @@ router.post('/registerUser', asyncHandler( async (req,res) => {
         throw new Error('Please add all details.');
     }
 
-    const userExist = await User.findOne({email});
-    if(userExist)
+    const doctorExist = await Doctor.findOne({email});
+    if(doctorExist)
     {
         res.status(400);
-        throw new Error('User all ready Exists.');
+        throw new Error('Doctor already Exists.');
     }
 
     const salt = await bcrypt.genSalt(10);
     const hashedpwd = await bcrypt.hash(password,salt);
 
-    const user = await User.create({
+    const doctor = await Doctor.create({
         name,
         email,
         phoneno,
         password: hashedpwd
     });
 
-    if(user) {
+    if(doctor) {
         res.status(201);
         res.json({
             id: user.id,
@@ -79,45 +78,3 @@ router.post('/registerUser', asyncHandler( async (req,res) => {
     }
 })
 )
-
-
-//Get User
-router.get('/getUser',protect , asyncHandler( async (req,res) => {
-    const{id, name, email, phoneno} = req.user;//await User.findById(req.user.id);
-
-    res.status(200);
-    res.json({
-       id,
-       name,
-       email,
-       phoneno
-    });
-})
-)
-
-router.put('/updateUser', asyncHandler( async (req,res) => {
-    const {name, email, phoneno} = req.body;
-    
-    res.status(200);
-    res.json({
-       name,
-       email,
-       phoneno
-    });
-})
-)
-
-
-// router.post('/getMe',protect , asyncHandler( async (req,res) => {
-//      const{id, name, email} = req.user;//await User.findById(req.user.id);
-
-//      res.status(200);
-//      res.json({
-//         id,
-//         name,
-//         email
-//      });
-// })
-// )
-
-module.exports = router;
