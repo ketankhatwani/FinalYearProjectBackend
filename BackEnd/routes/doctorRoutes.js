@@ -12,7 +12,7 @@ const generateToken = (id) => {
 }
 
 //Login
-router.post('/doctorLogin', asyncHandler( async (req,res) => {
+router.post('/login', asyncHandler( async (req,res) => {
     const {email, password} = req.body;
 
     if( !email || !password){
@@ -20,14 +20,14 @@ router.post('/doctorLogin', asyncHandler( async (req,res) => {
         throw new Error('Please add all details.');
     }
 
-    const user = await User.findOne({email});
-    if(user && await bcrypt.compare(password, user.password))
+    const doctor = await Doctor.findOne({email});
+    if(doctor && await bcrypt.compare(password, doctor.password))
     {
         res.json({
-            name: user.name,
-            email: user.email,
-            phoneno: user.phoneno,
-            token: generateToken(user.id)
+            name: doctor.name,
+            email: doctor.email,
+            phoneno: doctor.phoneno,
+            token: generateToken(doctor.id)
         });
     }
     else
@@ -39,10 +39,10 @@ router.post('/doctorLogin', asyncHandler( async (req,res) => {
 )
 
 //Register Doctor
-router.post('/registerDoctor', asyncHandler( async (req,res) => {
-    const {name, email, phoneno, password} = req.body;
+router.post('/register', asyncHandler( async (req,res) => {
+    const {name, email, phoneno, gender, dob, education, experience, awards, clinic, password} = req.body;
 
-    if(!name || !email || !phoneno || !password){
+    if(!name || !email || !phoneno || !gender || !dob || !password){
         res.status(400);
         throw new Error('Please add all details.');
     }
@@ -61,20 +61,47 @@ router.post('/registerDoctor', asyncHandler( async (req,res) => {
         name,
         email,
         phoneno,
+        gender,
+        dob,
+        education,
+        experience,
+        awards,
+        clinic,
         password: hashedpwd
     });
 
     if(doctor) {
         res.status(201);
         res.json({
-            id: user.id,
-            name : user.name,
-            token: generateToken(user.id)
+            id: doctor.id,
+            name : doctor.name,
+            token: generateToken(doctor.id)
         })
     }
     else {
         res.status(400);
-        throw new Error('Invalid User data');
+        throw new Error('Invalid data');
     }
 })
 )
+
+router.get('/getDoctor',protect , asyncHandler( async (req,res) => {
+    const{name, email, phoneno, gender, dob, education, experience, awards, clinic} = await Doctor.findById(req.id).select('-password');
+
+    res.status(200);
+    res.json({
+       id,
+       name,
+       email,
+       phoneno,
+       gender,
+       dob,
+       education,
+       experience,
+       awards,
+       clinic
+    });
+})
+)
+
+module.exports = router;

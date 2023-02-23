@@ -10,6 +10,10 @@ const userSchema = mongoose.Schema({
         required: [true, 'Please add Email'],
         unique: true
     },
+    dob : {
+        type : String,
+        required: [true, 'Please add Birth Date.']
+    },
     phoneno : {
         type: String,
         required: [true, 'Please add Phone No.']

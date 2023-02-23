@@ -14,6 +14,18 @@ const doctorSchema = mongoose.Schema({
         type: String,
         required: [true, 'Please add Phone No.']
     },
+    gender : {
+        type : Boolean,
+        required: [true, 'Please Select Gender']
+    },
+    dob : {
+        type : Date,
+        required: [true, 'Please enter Berth Date']
+    },
+    education : [String],
+    experience : [String],
+    awards : [String],
+    clinic : [String],
     password : {
         type: String,
         required: [true, 'Please add Password']

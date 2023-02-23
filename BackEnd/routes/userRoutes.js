@@ -28,6 +28,7 @@ router.post('/login', asyncHandler( async (req,res) => {
             name: user.name,
             email: user.email,
             phoneno: user.phoneno,
+            dob: user.dob,
             token: generateToken(user.id)
         });
     }
@@ -41,9 +42,9 @@ router.post('/login', asyncHandler( async (req,res) => {
 
 //Register User
 router.post('/registerUser', asyncHandler( async (req,res) => {
-    const {name, email, phoneno, password} = req.body;
+    const {name, email, dob, phoneno, password} = req.body;
 
-    if(!name || !email || !phoneno || !password){
+    if(!name || !email || !dob || !phoneno || !password){
         res.status(400);
         throw new Error('Please add all details.');
     }
@@ -61,6 +62,7 @@ router.post('/registerUser', asyncHandler( async (req,res) => {
     const user = await User.create({
         name,
         email,
+        dob,
         phoneno,
         password: hashedpwd
     });
@@ -70,6 +72,7 @@ router.post('/registerUser', asyncHandler( async (req,res) => {
         res.json({
             id: user.id,
             name : user.name,
+            dob: user.dob,
             token: generateToken(user.id)
         })
     }
@@ -82,28 +85,55 @@ router.post('/registerUser', asyncHandler( async (req,res) => {
 
 
 //Get User
-router.get('/getUser',protect , asyncHandler( async (req,res) => {
-    const{id, name, email, phoneno} = req.user;//await User.findById(req.user.id);
+router.get('/getUser/:id', protect, asyncHandler( async (req,res) => {
+    const{id, name, email, dob, phoneno} = await User.findById(req.params.id).select('-password');
 
     res.status(200);
     res.json({
        id,
        name,
        email,
+       dob,
        phoneno
     });
 })
 )
 
-router.put('/updateUser', asyncHandler( async (req,res) => {
-    const {name, email, phoneno} = req.body;
+router.put('/updateUser/:id', protect, asyncHandler( async (req,res) => {
+    const {name, email, dob, phoneno} = req.body;
+
+    const result = await User.findByIdAndUpdate({_id : req.params.id} , {
+        $set : {
+            name: name,
+            email: email,
+            dob: dob,
+            phoneno: phoneno,
+        }
+    } , {
+        useFindAndModify : false,
+    });
     
     res.status(200);
+    res.json(result);
+})
+)
+
+router.delete('/deleteUser/:id', protect, asyncHandler( async (req,res) => {
+    
+    await User.findOneAndRemove({_id: req.params.id})
+    res.status(200);
     res.json({
-       name,
-       email,
-       phoneno
+        message: 'sucess'
     });
+})
+)
+
+
+router.get('/getAllUsers', asyncHandler( async (req,res) => {
+    const user = await User.find({}).select('-password');
+
+    res.status(200);
+    res.json(user);
 })
 )
 
