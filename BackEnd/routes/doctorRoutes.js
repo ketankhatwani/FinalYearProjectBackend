@@ -5,6 +5,10 @@ const Doctor = require('../Models/doctorModel');
 const asyncHandler = require('express-async-handler');
 const jwt = require('jsonwebtoken');
 const protect = require('../MiddeleWare/authMiddeleware');
+const multer = require('multer');
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 
 const generateToken = (id) => {
@@ -39,7 +43,7 @@ router.post('/login', asyncHandler( async (req,res) => {
 )
 
 //Register Doctor
-router.post('/register', asyncHandler( async (req,res) => {
+router.post('/register', upload.single('file'), asyncHandler( async (req,res) => {
     const {name, email, phoneno, gender, dob, education, experience, awards, clinic, password} = req.body;
 
     if(!name || !email || !phoneno || !gender || !dob || !password){
@@ -63,6 +67,10 @@ router.post('/register', asyncHandler( async (req,res) => {
         phoneno,
         gender,
         dob,
+        file: {
+            data: req.file.buffer,
+            contentType: req.file.mimetype
+          },
         education,
         experience,
         awards,
@@ -75,7 +83,8 @@ router.post('/register', asyncHandler( async (req,res) => {
         res.json({
             id: doctor.id,
             name : doctor.name,
-            token: generateToken(doctor.id)
+            token: generateToken(doctor.id),
+            file: doctor.file
         })
     }
     else {
@@ -86,7 +95,7 @@ router.post('/register', asyncHandler( async (req,res) => {
 )
 
 router.get('/getDoctor',protect , asyncHandler( async (req,res) => {
-    const{name, email, phoneno, gender, dob, education, experience, awards, clinic} = await Doctor.findById(req.id).select('-password');
+    const{id, name, email, phoneno, gender, dob, file, education, experience, awards, clinic} = await Doctor.findById(req.id).select('-password');
 
     res.status(200);
     res.json({
@@ -96,6 +105,7 @@ router.get('/getDoctor',protect , asyncHandler( async (req,res) => {
        phoneno,
        gender,
        dob,
+       file,
        education,
        experience,
        awards,

@@ -15,12 +15,16 @@ const doctorSchema = mongoose.Schema({
         required: [true, 'Please add Phone No.']
     },
     gender : {
-        type : Boolean,
+        type : String,
         required: [true, 'Please Select Gender']
     },
     dob : {
-        type : Date,
+        type : String,
         required: [true, 'Please enter Berth Date']
+    },
+    file : {
+        data: Buffer,
+        contentType: String 
     },
     education : [String],
     experience : [String],
