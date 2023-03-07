@@ -6,9 +6,7 @@ const asyncHandler = require('express-async-handler');
 const jwt = require('jsonwebtoken');
 const protect = require('../MiddeleWare/authMiddeleware');
 const multer = require('multer');
-
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+const parser = require('../MiddeleWare/fileUpload')
 
 
 const generateToken = (id) => {
@@ -43,7 +41,7 @@ router.post('/login', asyncHandler( async (req,res) => {
 )
 
 //Register Doctor
-router.post('/register', upload.single('file'), asyncHandler( async (req,res) => {
+router.post('/register', parser.single('file'), asyncHandler( async (req,res) => {
     const {name, email, phoneno, gender, dob, education, experience, awards, clinic, password} = req.body;
 
     if(!name || !email || !phoneno || !gender || !dob || !password){
@@ -67,10 +65,8 @@ router.post('/register', upload.single('file'), asyncHandler( async (req,res) =>
         phoneno,
         gender,
         dob,
-        file: {
-            data: req.file.buffer,
-            contentType: req.file.mimetype
-          },
+        file: req.file.path,
+        cloud_id: req.file.filename, 
         education,
         experience,
         awards,
@@ -94,22 +90,58 @@ router.post('/register', upload.single('file'), asyncHandler( async (req,res) =>
 })
 )
 
-router.get('/getDoctor',protect , asyncHandler( async (req,res) => {
-    const{id, name, email, phoneno, gender, dob, file, education, experience, awards, clinic} = await Doctor.findById(req.id).select('-password');
+router.get('/getDoctor/:id',protect , asyncHandler( async (req,res) => {
+    const doctor = await Doctor.findById(req.params.id).select('-password');
+
+    if(doctor) {
+        res.status(200);
+        res.json(doctor);
+    }
+    else {
+        res.status(400);
+        throw new Error('Data not available.');
+    }
+})
+)
+
+router.get('/getAllDoctors', asyncHandler( async (req,res) => {
+    const doctor = await Doctor.find({}).select('-password');
 
     res.status(200);
+    res.json(doctor);
+})
+)
+
+router.put('/updateDoctor/:id', protect, asyncHandler( async (req,res) => {
+    const {name, email, phoneno, gender, dob, education, experience, awards, clinic} = req.body;
+
+    const result = await Doctor.findByIdAndUpdate({_id : req.params.id} , {
+        $set : {
+            name: name,
+            email: email,
+            phoneno: phoneno,
+            gender: gender,
+            dob: dob,
+            education: education,
+            experience: experience,
+            awards: awards,
+            clinic: clinic,
+        }
+    } , {
+        useFindAndModify : false,
+    });
+    
+    res.status(200);
+    res.json(result);
+})
+)
+
+router.delete('/deleteDoctor/:id', protect, asyncHandler( async (req,res) => {
+    
+    await Doctor.findOneAndRemove({_id: req.params.id})
+    res.status(200);
     res.json({
-       id,
-       name,
-       email,
-       phoneno,
-       gender,
-       dob,
-       file,
-       education,
-       experience,
-       awards,
-       clinic
+        message: 'sucess'
     });
 })
 )

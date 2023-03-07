@@ -22,9 +22,12 @@ const doctorSchema = mongoose.Schema({
         type : String,
         required: [true, 'Please enter Berth Date']
     },
-    file : {
-        data: Buffer,
-        contentType: String 
+    file: { 
+        type: String,
+        required: true 
+    },
+    cloud_id:{
+        type: String
     },
     education : [String],
     experience : [String],
