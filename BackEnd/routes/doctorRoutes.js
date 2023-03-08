@@ -5,7 +5,6 @@ const Doctor = require('../Models/doctorModel');
 const asyncHandler = require('express-async-handler');
 const jwt = require('jsonwebtoken');
 const protect = require('../MiddeleWare/authMiddeleware');
-const multer = require('multer');
 const parser = require('../MiddeleWare/fileUpload')
 
 

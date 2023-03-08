@@ -3,12 +3,24 @@ const mongoose = require('mongoose');
 const sloteSchema = mongoose.Schema({
     date : {
         type: String,
-        required: [true, 'Please add Name']
+        required: [true, 'Please add Date']
     },
-    doctor : {
+    startTime : {
+        type: String,
+        required: true
+    },
+    endTime : {
+        type: String,
+        required: true
+    },
+    doctorId : {
         type: mongoose.Types.ObjectId,
         required: true,
         ref: 'Doctor'
+    },
+    userId : {
+        type: mongoose.Types.ObjectId,
+        ref: 'User'
     }
 },
 { 
